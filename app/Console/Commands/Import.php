@@ -38,9 +38,12 @@ class Import extends Command
      */
     public function handle()
     {
+        $startTime = microtime(true);
         $this->line('Starting tests');
         $saltEdge = app(ListLoginsRequest::class);
         $saltEdge->call();
-        //dd($saltEdge);
+
+        $endTime = round(microtime(true) - $startTime, 4);
+        $this->comment(sprintf('Finished the test in %s second(s).', $endTime));
     }
 }

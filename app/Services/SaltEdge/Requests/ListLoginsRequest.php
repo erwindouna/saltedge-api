@@ -2,7 +2,7 @@
 
 namespace App\Services\SaltEdge\Requests;
 
-use App\Repositories\SaltEdgeCustomersInterface;
+use App\Repositories\SaltEdge\CustomerRepository;
 use App\Services\SaltEdge\Objects\Login;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -48,12 +48,18 @@ class ListLoginsRequest extends SaltEdgeRequest
 
         // @TODO: Maybe add some sorting later on?
         // @TODO: for sure make it loop, on the request if I intend to get more connections
-        // Create/update a new record
-        $this->saltEdgeCustomers = app(SaltEdgeCustomerRepositoryInterface::class);
         foreach ($collection as $k => $c) {
-            dd($c);
-        }
+            $customer = new CustomerRepository;
+            $customer = $customer->findByCustomerId($c->getCustomerId());
 
-        $this->saltEdgeCustomers->findByCustomerId();
+            if (null === $customer) {
+                $customer = new CustomerRepository;
+                $customer->store($c);
+            } else {
+                $customer->object = serialize($c);
+                $customer->hash = hash('sha256', serialize($c));
+                $customer->save();
+            }
+        }
     }
 }

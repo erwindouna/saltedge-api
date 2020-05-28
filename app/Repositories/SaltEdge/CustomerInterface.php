@@ -2,7 +2,7 @@
 
 namespace App\Repositories\SaltEdge;
 
-use App\Models\Customer;
+use App\Models\SaltEdge\Customer;
 
 interface CustomerInterface
 {
@@ -11,4 +11,6 @@ interface CustomerInterface
      * @return Customer|null
      */
     public function findByCustomerId(int $customerId): ?Customer;
+
+    public function store(object $data): ?Customer;
 }

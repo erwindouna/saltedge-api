@@ -55,6 +55,22 @@ class Login
     }
 
     /**
+     * @return mixed
+     */
+    public function getCustomerId()
+    {
+        return $this->customerId;
+    }
+
+    /**
+     * @param mixed $customerId
+     */
+    public function setCustomerId($customerId): void
+    {
+        $this->customerId = $customerId;
+    }
+
+    /**
      * @return Carbon
      */
     public function getConsentGivenAt(): Carbon
@@ -116,6 +132,22 @@ class Login
     public function setCreatedAt(Carbon $createdAt): void
     {
         $this->createdAt = $createdAt;
+    }
+
+    /**
+     * @return Carbon
+     */
+    public function getUpdatedAt(): Carbon
+    {
+        return $this->updatedAt;
+    }
+
+    /**
+     * @param Carbon $updatedAt
+     */
+    public function setUpdatedAt(Carbon $updatedAt): void
+    {
+        $this->updatedAt = $updatedAt;
     }
 
     /**
@@ -308,21 +340,5 @@ class Login
     public function setStoreCredentials($storeCredentials): void
     {
         $this->storeCredentials = $storeCredentials;
-    }
-
-    /**
-     * @return Carbon
-     */
-    public function getUpdatedAt(): Carbon
-    {
-        return $this->updatedAt;
-    }
-
-    /**
-     * @param Carbon $updatedAt
-     */
-    public function setUpdatedAt(Carbon $updatedAt): void
-    {
-        $this->updatedAt = $updatedAt;
     }
 }

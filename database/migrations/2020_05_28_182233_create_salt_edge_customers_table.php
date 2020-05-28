@@ -17,9 +17,10 @@ class CreateSaltEdgeCustomersTable extends Migration
             $table->increments('id');
             $table->timestamps();
             $table->softDeletes();
-            $table->integer('customer_id', false, true);
+            $table->bigInteger('customer_id', false, true);
             $table->string('provider');
-            $table->json('json');
+            $table->binary('object');
+            $table->string('hash');
         });
     }
 
