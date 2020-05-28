@@ -37,7 +37,7 @@ return [
     'channels' => [
         'stack' => [
             'driver' => 'stack',
-            'channels' => ['single'],
+            'channels' => ['single', 'stdout'],
             'ignore_exceptions' => false,
         ],
 
@@ -52,6 +52,12 @@ return [
             'path' => storage_path('logs/laravel.log'),
             'level' => 'debug',
             'days' => 14,
+        ],
+
+        'stdout' => [
+            'driver' => 'single',
+            'path' => 'php://stdout',
+            'level' => 'debug',
         ],
 
         'slack' => [
