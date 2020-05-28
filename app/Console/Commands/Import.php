@@ -2,9 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Services\SaltEdge\Requests\ListLoginsRequest;
 use Illuminate\Console\Command;
-use SalteEdgeAPI\Services\Requests\SaltEdgeRequest;
-
 
 class Import extends Command
 {
@@ -39,7 +38,9 @@ class Import extends Command
      */
     public function handle()
     {
-        $this->line('starting tests');
-        $saltEdge = new SaltEdgeRequest();
+        $this->line('Starting tests');
+        $saltEdge = app(ListLoginsRequest::class);
+        $saltEdge->call();
+        //dd($saltEdge);
     }
 }
