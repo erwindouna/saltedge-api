@@ -2,6 +2,7 @@
 
 namespace App\Services\SaltEdge\Requests;
 
+use Exception;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -27,10 +28,9 @@ abstract class SaltEdgeRequest
     protected function getRequest(string $uri): ?array
     {
         try {
-            $httpClient = Http::withHeaders($this->generateHeaders())
-                ->get($this->constructURI($uri));
-        } catch (\Exception $e) {
-            Log::error(sprintf('Error on getRequest. Exception thrown: %s', $e->getMessage()));
+            $httpClient = Http::withHeaders($this->generateHeaders())->get($this->constructURI($uri));
+        } catch (Exception $e) {
+            Log::error(sprintf('Error on Guzzle getRequest. Exception thrown: %s', $e->getMessage()));
             return null;
         }
 
@@ -40,7 +40,11 @@ abstract class SaltEdgeRequest
             return null;
         }
 
-        return json_decode($httpClient->body(), true);
+        $response['body'] = json_decode($httpClient->body(), true);
+        $response['headers'] = $httpClient->headers();
+        $response['statusCode'] = $httpClient->status();
+
+        return $response;
     }
 
     /**
