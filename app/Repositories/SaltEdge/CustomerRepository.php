@@ -3,6 +3,7 @@
 namespace App\Repositories\SaltEdge;
 
 use App\Models\SaltEdge\Customer;
+use Illuminate\Support\Collection;
 
 class CustomerRepository implements CustomerInterface
 {
@@ -13,6 +14,14 @@ class CustomerRepository implements CustomerInterface
     public function findByCustomerId(int $customerId): ?Customer
     {
         return Customer::where('customer_id', $customerId)->first();
+    }
+
+    /**
+     * @return Customer|null
+     */
+    public function findAllCustomers(): ?Collection
+    {
+        return Customer::whereNull('deleted_at')->get();
     }
 
     /**

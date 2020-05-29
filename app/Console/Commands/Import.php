@@ -2,8 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Services\SaltEdge\Requests\ListAccountsRequest;
 use App\Services\SaltEdge\Requests\ListLoginsRequest;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class Import extends Command
 {
@@ -12,7 +14,7 @@ class Import extends Command
      *
      * @var string
      */
-    protected $signature = 'import:test';
+    protected $signature = 'import:run';
 
     /**
      * The console command description.
@@ -38,10 +40,27 @@ class Import extends Command
      */
     public function handle()
     {
+        /**
+         * @NOTE
+         * The main idea (for now), is that these calls are decoupled on purpose
+         * Future refactoring should prove this can be handled via a queue/job
+         * and I intend to give them a sole purpose and not be depended on the workflow
+         * (since this might change later on).
+         */
+
         $startTime = microtime(true);
-        $this->line('Starting tests');
-        $saltEdge = app(ListLoginsRequest::class);
-        $saltEdge->call();
+        $this->line('Starting import run');
+
+        Log::info('Starting SaltEdge ListLoginsRequest');
+        $saltEdgeLogins = app(ListLoginsRequest::class);
+        $saltEdgeLogins->call();
+        //Log::info(print_r($saltEdgeLogins->getLogins(),true));
+        Log::info('Finished SaltEdge ListLoginsRequest');
+
+        Log::info('Starting SaltEdge ListAccountsRequest');
+        $saltEdgeAccounts = app(ListAccountsRequest::class);
+        $saltEdgeAccounts->call();
+        Log::info('Finished SaltEdge ListAccountsRequest');
 
         $endTime = round(microtime(true) - $startTime, 4);
         $this->comment(sprintf('Finished the test in %s second(s).', $endTime));

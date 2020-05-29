@@ -19,6 +19,9 @@ abstract class SaltEdgeRequest
         $this->secretKey = Config::get('edapi.saltedge.api.secret');
     }
 
+    /**
+     * Abstract function that will be specialized in its own implementation
+     */
     abstract public function call(): void;
 
     /**
@@ -27,12 +30,19 @@ abstract class SaltEdgeRequest
      */
     protected function getRequest(string $uri): ?array
     {
+        $startTime = microtime(true);
+        $url = $this->constructURL($uri);
+        Log::info(sprintf('Performing SaltEdge getRequest to "%s".', $url));
+
         try {
-            $httpClient = Http::withHeaders($this->generateHeaders())->get($this->constructURI($uri));
+            $httpClient = Http::withHeaders($this->generateHeaders())->get($url);
         } catch (Exception $e) {
             Log::error(sprintf('Error on Guzzle getRequest. Exception thrown: %s', $e->getMessage()));
             return null;
         }
+
+        $endTime = round(microtime(true) - $startTime, 6);
+        Log::info(sprintf('Response received back in %s second(s).', $endTime));
 
         // A different status code, other than hTTP 200 was returned
         if (200 !== (int)$httpClient->status()) {
@@ -43,6 +53,7 @@ abstract class SaltEdgeRequest
         $response['body'] = json_decode($httpClient->body(), true);
         $response['headers'] = $httpClient->headers();
         $response['statusCode'] = $httpClient->status();
+        Log::info(sprintf('Proper HTTP status %s returned. Returning array response.', $httpClient->status()));
 
         return $response;
     }
@@ -61,10 +72,14 @@ abstract class SaltEdgeRequest
         ];
     }
 
-    protected function constructURI(string $uri): string
+    /**
+     * @param string $uri
+     * @return string
+     */
+    protected function constructURL(string $uri): string
     {
         $server = Config::get('edapi.saltedge.server');
-        $apiVersion = '/api/' . Config::get('edapi.saltedge.api.version');
+        $apiVersion = '/api/' . Config::get('edapi.saltedge.api.version') . '/';
 
         return $server . $apiVersion . $uri;
     }
