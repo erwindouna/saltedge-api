@@ -33,6 +33,7 @@ class ListAccountsRequest extends SaltEdgeRequest
             return;
         }
 
+        Log::info(sprintf('A total of %s customer record(s) were fetch from the DB. Looping through record(s) and fetching accounts from SaltEdge.', $customers->count()));
         foreach ($customers as $k => $c) {
             $login = unserialize($c->object);
 
@@ -45,19 +46,22 @@ class ListAccountsRequest extends SaltEdgeRequest
             }
 
             $collection = new Collection;
-            foreach ($response['body']['data'] as $transactionArray) {
-                $collection->push(new Account($transactionArray));
+            foreach ($response['body']['data'] as $accountArray) {
+                $collection->push(new Account($accountArray));
             }
 
+            Log::info(sprintf('A total of %s account record(s) were retrieved. Looping through record(s).', $collection->count()));
             foreach ($collection as $k => $col) {
                 $account = new AccountRepository;
                 $account = $account->findByAccountId($col->getId());
                 if (null === $account) {
+                    Log::info(sprintf('Creating new account record for %s.', $col->getName()));
                     $account = new AccountRepository;
                     $account->store($col, $c->id);
                     continue;
                 }
 
+                Log::info(sprintf('Updating account record for %s.', $col->getName()));
                 $account->object = serialize($col);
                 $account->hash = hash('sha256', serialize($col));
                 $account->save();

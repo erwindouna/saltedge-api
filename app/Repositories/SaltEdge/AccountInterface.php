@@ -25,4 +25,9 @@ interface AccountInterface
      * @return Collection|null
      */
     public function findByCustomerId(int $customerId): ?Collection;
+
+    /**
+     * @return Collection|null
+     */
+    public function findAllAccounts(): ?Collection;
 }

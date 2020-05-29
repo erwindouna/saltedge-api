@@ -36,6 +36,14 @@ class AccountRepository implements AccountInterface
     }
 
     /**
+     * @return Collection|null
+     */
+    public function findAllAccounts(): ?Collection
+    {
+        return Account::whereNull('deleted_at')->get();
+    }
+
+    /**
      * @param int $customerId
      * @return Collection|null
      */
