@@ -3,6 +3,8 @@
 namespace App\Services\SaltEdge\Requests;
 
 use App\Repositories\SaltEdge\CustomerRepository;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 
 class ListAccountsRequest extends SaltEdgeRequest
 {
@@ -19,9 +21,31 @@ class ListAccountsRequest extends SaltEdgeRequest
 
     public function call(): void
     {
+        Log::info('Starting to retrieve all linked accounts. Fetching customer object(s).');
         // First fetch the current registered customers
         $customers = new CustomerRepository;
         $customers = $customers->findAllCustomers();
-        dd($customers);
+
+        if (null === $customers) {
+            Log::error('No active customers were found.');
+            return;
+        }
+
+        foreach ($customers as $k => $c) {
+            $login = unserialize($c->object);
+
+            $tmpUri = $this->uri . '?' . http_build_query(['login_id' => $login->getId()]);
+            $response = $this->getRequest($tmpUri);
+
+            if (null === $response) {
+                Log::error(sprintf('Could not find accounts for customerId %s.', $c->customer_id));
+                continue;
+            }
+
+            $collection = new Collection;
+            foreach ($response['body']['data'] as $transactionArray) {
+                $collection->push(new Transaction($transactionArray));
+            }
+        }
     }
 }

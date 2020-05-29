@@ -39,11 +39,6 @@ class ListLoginsRequest extends SaltEdgeRequest
             return;
         }
 
-        if (!isset($response['body']['data'])) {
-            Log::error('The data structure returned seems unrecognized.');
-            return;
-        }
-
         $collection = new Collection;
         foreach ($response['body']['data'] as $loginArray) {
             $collection->push(new Login($loginArray));
@@ -51,7 +46,9 @@ class ListLoginsRequest extends SaltEdgeRequest
 
         // @TODO: Maybe add some sorting later on?
         // @TODO: for sure make it loop, on the request if I intend to get more connections
+        Log::info(sprintf('A total of %s login record(s) was retrieved. Looping through record(s).', $collection->count()));
         foreach ($collection as $k => $c) {
+            Log::info(sprintf('Handling record %s.', ($k + 1)));
             $customer = new CustomerRepository;
             $customer = $customer->findByCustomerId($c->getCustomerId());
 
