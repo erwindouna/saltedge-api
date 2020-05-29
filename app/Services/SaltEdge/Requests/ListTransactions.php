@@ -3,6 +3,7 @@
 namespace App\Services\SaltEdge\Requests;
 
 use App\Repositories\SaltEdge\AccountRepository;
+use App\Repositories\SaltEdge\TransactionRepository;
 use App\Services\SaltEdge\Objects\Transaction;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -52,23 +53,30 @@ class ListTransactions extends SaltEdgeRequest
 
             Log::info(sprintf('A total of %s transactions record(s) were retrieved. Looping through record(s).', $collection->count()));
             foreach ($collection as $k => $c) {
-                $account = new AccountRepository;
-                $account = $account->findByAccountId($col->getId());
-                if (null === $account) {
-                    Log::info(sprintf('Creating new account record for %s.', $col->getName()));
-                    $account = new AccountRepository;
-                    $account->store($col, $c->id);
+                $transaction = new TransactionRepository;
+                $transaction = $transaction->findByTransactionId($c->getId());
+                if (null === $transaction) {
+                    Log::info(sprintf('Creating new transaction record for %s.', $c->getId()));
+                    $transaction = new TransactionRepository;
+                    $transaction->store($c, $c->getAccountId());
                     continue;
                 }
 
-                Log::info(sprintf('Updating account record for %s.', $col->getName()));
-                $account->object = serialize($col);
-                $account->hash = hash('sha256', serialize($col));
-                $account->save();
+                Log::info(sprintf('Updating transaction record for %s.', $c->getId()));
+                $transaction->object = encrypt(serialize($c));
+                $transaction->hash = hash('sha256', encrypt(serialize($c)));
+                $transaction->save();
             }
 
-            $this->accounts = $collection->toArray();
-
+            $this->transactions = $collection->toArray();
         }
+    }
+
+    /**
+     * @return Transaction|null
+     */
+    public function getTransactions(): ?Transaction
+    {
+        return $this->transactions;
     }
 }

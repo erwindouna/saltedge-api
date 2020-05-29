@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\Firefly\Requests\Accounts;
 use App\Services\SaltEdge\Requests\ListAccountsRequest;
 use App\Services\SaltEdge\Requests\ListLoginsRequest;
 use App\Services\SaltEdge\Requests\ListTransactions;
@@ -55,13 +56,17 @@ class Import extends Command
         Log::info('Starting SaltEdge ListLoginsRequest');
         $saltEdgeLogins = app(ListLoginsRequest::class);
         $saltEdgeLogins->call();
-        //Log::info(print_r($saltEdgeLogins->getLogins(),true));
         Log::info('Finished SaltEdge ListLoginsRequest');
 
         Log::info('Starting SaltEdge ListAccountsRequest');
         $saltEdgeAccounts = app(ListAccountsRequest::class);
         $saltEdgeAccounts->call();
         Log::info('Finished SaltEdge ListAccountsRequest');
+
+        Log::info('Starting FireFly AccountsRequest');
+        $fireflyAccounts = app(Accounts::class);
+        $fireflyAccounts->call();
+        Log::info('Starting FireFly AccountsRequest');
 
         Log::info('Starting SaltEdge ListTransactionsRequest');
         $saltEdgeTransactions = app(ListTransactions::class);

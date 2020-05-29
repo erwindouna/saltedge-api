@@ -1,38 +1,36 @@
 <?php
 
-namespace App\Services\SaltEdge\Requests;
+namespace App\Services\Firefly\Requests;
 
-use Exception;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-abstract class SaltEdgeRequest
+abstract class FireflyRequest
 {
-    private $appID;
-    private $secretKey;
+    private $accesToken;
+    private $refreshToken;
 
     public function __construct()
     {
-        Log::debug("Initializing SaltEdge Requester.");
-        $this->appID = Config::get('edapi.saltedge.api.app_id');
-        $this->secretKey = Config::get('edapi.saltedge.api.secret');
+        Log::debug('Initializing Firefly requester.');
+        $this->accesToken = Config::get('edapi.firefly.api.access_token');
+        $this->refreshToken = Config::get('edapi.firefly.api.refresh_token');
     }
 
-    /**
-     * Abstract function that will be specialized in its own implementation
-     */
     abstract public function call(): void;
 
     /**
-     * @param string $uri
+     * @TODO: might be duplicated, refactor later on to a generic abstract class. If, no specialization is needed.
+     * @param $uri
      * @return array|null
      */
-    protected function getRequest(string $uri): ?array
+    protected function getRequest($uri): ?array
     {
+        $this->generateHeaders();
         $startTime = microtime(true);
         $url = $this->constructURL($uri);
-        Log::info(sprintf('Performing SaltEdge getRequest to "%s".', $url));
+        Log::info(sprintf('Performing Firefly getRequest to "%s".', $url));
 
         try {
             $httpClient = Http::withHeaders($this->generateHeaders())->get($url);
@@ -59,16 +57,15 @@ abstract class SaltEdgeRequest
     }
 
     /**
-     * Generate HTTP headers used for the calls
      * @return array
      */
-    protected function generateHeaders(): array
+    private function generateHeaders(): array
     {
+        Log::info('Initializing OAuth2 authorization headers.');
         return [
             'Accept' => 'application/json',
             'Content-Type' => 'application/json',
-            'App-Id' => $this->appID,
-            'Secret' => $this->secretKey
+            'Authorization' => 'Bearer ' . $this->accesToken
         ];
     }
 
@@ -78,16 +75,10 @@ abstract class SaltEdgeRequest
      */
     protected function constructURL(string $uri): string
     {
-        $server = Config::get('edapi.saltedge.server');
-        $apiVersion = '/api/' . Config::get('edapi.saltedge.api.version') . '/';
+        $server = Config::get('edapi.firefly.server');
+        $apiVersion = '/api/' . Config::get('edapi.firefly.api.version') . '/';
 
         return $server . $apiVersion . $uri;
-    }
-
-    protected function postRequest(string $uri): bool
-    {
-
-        return true;
     }
 
 }
