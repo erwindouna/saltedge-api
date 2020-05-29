@@ -68,7 +68,7 @@ abstract class SaltEdgeRequest
             'Accept' => 'application/json',
             'Content-Type' => 'application/json',
             'App-Id' => $this->appID,
-            'Secret' => $this->secretKey,
+            'Secret' => $this->secretKey
         ];
     }
 
