@@ -4,8 +4,8 @@ namespace App\Models\Firefly;
 
 use Illuminate\Database\Eloquent\Model;
 
-class FireflyAccounts extends Model
+class Account extends Model
 {
     protected $table = 'firefly_accounts';
-    protected $fillable = ['account_id', 'account_name', 'object', 'hash'];
+    protected $fillable = ['account_id', 'account_name', 'account_iban', 'object', 'hash'];
 }

@@ -6,8 +6,8 @@ use Carbon\Carbon;
 
 class Attributes
 {
-    private Carbon $createdAt;
-    private Carbon $updatedAt;
+    private $createdAt;
+    private $updatedAt;
     private $active;
     private $name;
     private $type;
@@ -17,19 +17,19 @@ class Attributes
     private $currencySymbol;
     private $currencyDecimalPlaces;
     private $currentBalance;
-    private Carbon $currentBalanceDate;
+    private $currentBalanceDate;
     private $notes;
-    private Carbon $monthlyPaymentDate;
+    private $monthlyPaymentDate;
     private $creditCardType;
     private $accountNumber;
     private $iban;
     private $bic;
     private $virtualBalance;
     private $openingBalance;
-    private Carbon $openingBalanceDate;
+    private $openingBalanceDate;
     private $liabilityType;
     private $liabilityAmount;
-    private Carbon $liabilityStartDate;
+    private $liabilityStartDate;
     private $includeNetWorth;
     private $longitude;
     private $latitude;

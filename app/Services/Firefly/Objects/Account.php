@@ -8,7 +8,7 @@ class Account
 {
     private $type;
     private $id;
-    private Attributes $attributes;
+    private $attributes;
 
     /**
      * Account constructor.
@@ -17,7 +17,7 @@ class Account
      */
     public function __construct(array $array)
     {
-        $this->type = $array['accounts'];
+        $this->type = $array['type'];
         $this->id = $array['id'];
         $this->attributes = new Attributes($array['attributes'] ?? []);
     }

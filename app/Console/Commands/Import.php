@@ -6,6 +6,7 @@ use App\Services\Firefly\Requests\Accounts;
 use App\Services\SaltEdge\Requests\ListAccountsRequest;
 use App\Services\SaltEdge\Requests\ListLoginsRequest;
 use App\Services\SaltEdge\Requests\ListTransactions;
+use App\Services\Sync\SyncAccounts;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -53,6 +54,8 @@ class Import extends Command
         $startTime = microtime(true);
         $this->line('Starting import run');
 
+        // Yes, but so easy for development
+        goto Sync;
         Log::info('Starting SaltEdge ListLoginsRequest');
         $saltEdgeLogins = app(ListLoginsRequest::class);
         $saltEdgeLogins->call();
@@ -72,6 +75,12 @@ class Import extends Command
         $saltEdgeTransactions = app(ListTransactions::class);
         $saltEdgeTransactions->call();
         Log::info('Finished SaltEdge ListTransactionsRequest');
+
+        Sync:
+        Log::info("Starting to synchronize accounts.");
+        $syncAccounts = app(SyncAccounts::class);
+        $syncAccounts->call();
+        Log::info("Finished synchronize accounts.");
 
         $endTime = round(microtime(true) - $startTime, 4);
         $this->comment(sprintf('Finished the test in %s second(s).', $endTime));

@@ -2,15 +2,14 @@
 
 namespace App\Services\Firefly\Requests;
 
-use App\Repositories\SaltEdge\AccountRepository;
-use App\Services\SaltEdge\Objects\Account;
-use App\Services\SaltEdge\Objects\Transaction;
+use App\Repositories\Firefly\FireflyFireflyAccountRepository;
+use App\Services\Firefly\Objects\Account;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
 class Accounts extends FireflyRequest
 {
-    protected string $uri;
+    protected $uri;
     private $accounts;
 
     /**
@@ -40,19 +39,19 @@ class Accounts extends FireflyRequest
         }
 
         Log::info(sprintf('A total of %s account record(s) were retrieved. Looping through record(s).', $collection->count()));
-        foreach ($collection as $k => $col) {
-            $account = new AccountRepository;
-            $account = $account->findByAccountId($col->getId());
+        foreach ($collection as $k => $c) {
+            $account = new FireflyFireflyAccountRepository;
+            $account = $account->findByAccountId($c->getId());
             if (null === $account) {
-                Log::info(sprintf('Creating new account record for %s.', $col->getName()));
-                $account = new AccountRepository;
-                $account->store($col, $c->id);
+                Log::info(sprintf('Creating new account record for %s.', $c->getAttributes()->getName()));
+                $account = new FireflyFireflyAccountRepository;
+                $account->store($c);
                 continue;
             }
 
-            Log::info(sprintf('Updating account record for %s.', $col->getName()));
-            $account->object = serialize($col);
-            $account->hash = hash('sha256', serialize($col));
+            Log::info(sprintf('Updating account record for %s.', $c->getAttributes()->getName()));
+            $account->object = encrypt(serialize($c));
+            $account->hash = hash('sha256', encrypt(serialize($c)));
             $account->save();
         }
 
@@ -60,9 +59,9 @@ class Accounts extends FireflyRequest
     }
 
     /**
-     * @return Transaction|null
+     * @return Account|null
      */
-    public function getAccounts(): ?Acc
+    public function getAccounts(): ?Account
     {
         return $this->accounts;
     }
