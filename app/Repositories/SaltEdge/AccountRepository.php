@@ -17,7 +17,7 @@ class AccountRepository implements AccountInterface
     {
         $model = Account::create([
             'account_id' => $data->getId(),
-            'account_name=>' => $data->getName(),
+            'account_name' => $data->getName(),
             'salt_edge_customer_id' => $customerId,
             'object' => serialize($data),
             'hash' => hash('sha256', serialize($data))

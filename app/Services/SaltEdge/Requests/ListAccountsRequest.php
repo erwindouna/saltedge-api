@@ -2,6 +2,7 @@
 
 namespace App\Services\SaltEdge\Requests;
 
+use App\Repositories\SaltEdge\AccountRepository;
 use App\Repositories\SaltEdge\CustomerRepository;
 use App\Services\SaltEdge\Objects\Account;
 use Illuminate\Support\Collection;
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 class ListAccountsRequest extends SaltEdgeRequest
 {
     protected $uri;
+    private $accounts;
 
     /**
      * ListAccountsRequest constructor.
@@ -47,12 +49,29 @@ class ListAccountsRequest extends SaltEdgeRequest
                 $collection->push(new Account($transactionArray));
             }
 
-            foreach ($collection as $k => $c) {
+            foreach ($collection as $k => $col) {
+                $account = new AccountRepository;
+                $account = $account->findByAccountId($col->getId());
+                if (null === $account) {
+                    $account = new AccountRepository;
+                    $account->store($col, $c->id);
+                    continue;
+                }
 
+                $account->object = serialize($col);
+                $account->hash = hash('sha256', serialize($col));
+                $account->save();
             }
 
-            dd($collection);
-
+            $this->accounts = $collection->toArray();
         }
+    }
+
+    /**
+     * @return Account|null
+     */
+    public function getAccounts(): ?Account
+    {
+        return $this->accounts;
     }
 }
