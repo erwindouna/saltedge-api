@@ -102,8 +102,15 @@ class SyncAccounts extends SyncHandler
             $data['interest'] = $saltEdgeAccount->getExtra()['floating_interest_rate']['max_value'];
             $data['interest_period'] = 'monthly'; // Fixed value
         } else {
-
             $data['iban'] = $saltEdgeAccount->getName();
+            // @TODO: Default for now, make proper code later on
+            if ($saltEdgeAccount->getNature() == 'account') {
+                $data['account_role'] = 'defaultAsset';
+            } else {
+                $data['account_role'] = 'savingAsset';
+            }
+            $data['opening_balance'] = $saltEdgeAccount->getBalance();
+            $data['opening_balance_date'] = Carbon::now();
         }
 
         $postRequest = new Accounts();
