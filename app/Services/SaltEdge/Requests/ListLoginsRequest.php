@@ -59,7 +59,7 @@ class ListLoginsRequest extends SaltEdgeRequest
                 continue;
             }
 
-            $customer->object = serialize($c);
+            $customer->object = encrypt(serialize($c));
             $customer->hash = hash('sha256', serialize($c));
             $customer->save();
         }

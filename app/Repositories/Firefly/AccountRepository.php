@@ -41,7 +41,6 @@ class AccountRepository implements AccountInterface
      */
     public function findByIban(string $iban): ?Account
     {
-        $iban = strtoupper(str_replace(' ', '', $iban));
         return Account::where('account_iban', $iban)->first();
     }
 

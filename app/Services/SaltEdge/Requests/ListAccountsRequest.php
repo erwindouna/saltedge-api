@@ -35,7 +35,7 @@ class ListAccountsRequest extends SaltEdgeRequest
 
         Log::info(sprintf('A total of %s customer record(s) were fetch from the DB. Looping through record(s) and fetching accounts from SaltEdge.', $customers->count()));
         foreach ($customers as $k => $c) {
-            $login = unserialize($c->object);
+            $login = unserialize(decrypt($c->object));
 
             $tmpUri = $this->uri . '?' . http_build_query(['login_id' => $login->getId()]);
             $response = $this->getRequest($tmpUri);

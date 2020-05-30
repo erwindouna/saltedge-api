@@ -19,7 +19,7 @@ class CreateFireflyAccountsTable extends Migration
             $table->softDeletes();
             $table->bigInteger('account_id');
             $table->string('account_name');
-            $table->string('account_iban');
+            $table->string('account_iban')->nullable();
             $table->binary('object');
             $table->string('hash');
         });

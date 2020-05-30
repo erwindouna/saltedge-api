@@ -40,11 +40,12 @@ class CustomerRepository implements CustomerInterface
      */
     public function store(object $data): ?Customer
     {
+        $object = encrypt(serialize($data));
         $model = Customer::create([
             'customer_id' => $data->getCustomerId(),
             'provider' => $data->getProviderName(),
-            'object' => serialize($data),
-            'hash' => hash('sha256', serialize($data))
+            'object' => $object,
+            'hash' => hash('sha256', $object)
         ]);
 
         return $model;

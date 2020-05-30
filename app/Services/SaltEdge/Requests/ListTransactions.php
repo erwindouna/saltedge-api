@@ -36,7 +36,7 @@ class ListTransactions extends SaltEdgeRequest
 
         Log::info(sprintf('A total of %s accounts record(s) were fetch from the DB. Looping through record(s) and fetch transactions from SaltEdge.', $accounts->count()));
         foreach ($accounts as $a) {
-            $account = unserialize($a->object);
+            $account = unserialize(decrypt($a->object));
 
             $tmpUri = $this->uri . '?' . http_build_query(['account_id' => $account->getId()]);
             $response = $this->getRequest($tmpUri);

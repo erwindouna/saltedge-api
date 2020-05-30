@@ -2,7 +2,7 @@
 
 namespace App\Services\Firefly\Requests;
 
-use App\Repositories\Firefly\FireflyFireflyAccountRepository;
+use App\Repositories\Firefly\AccountRepository;
 use App\Services\Firefly\Objects\Account;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -40,11 +40,11 @@ class Accounts extends FireflyRequest
 
         Log::info(sprintf('A total of %s account record(s) were retrieved. Looping through record(s).', $collection->count()));
         foreach ($collection as $k => $c) {
-            $account = new FireflyFireflyAccountRepository;
+            $account = new AccountRepository;
             $account = $account->findByAccountId($c->getId());
             if (null === $account) {
                 Log::info(sprintf('Creating new account record for %s.', $c->getAttributes()->getName()));
-                $account = new FireflyFireflyAccountRepository;
+                $account = new AccountRepository;
                 $account->store($c);
                 continue;
             }

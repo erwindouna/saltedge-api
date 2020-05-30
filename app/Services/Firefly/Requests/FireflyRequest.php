@@ -57,6 +57,42 @@ abstract class FireflyRequest
     }
 
     /**
+     * @param $uri
+     * @param $data
+     * @return array|null
+     */
+    public function postRequest($uri, $data): ?array
+    {
+        $this->generateHeaders();
+        $startTime = microtime(true);
+        $url = $this->constructURL($uri);
+        Log::info(sprintf('Performing Firefly postRequest to "%s".', $url));
+
+        try {
+            $httpClient = Http::withHeaders($this->generateHeaders())->post($url, $data);
+        } catch (Exception $e) {
+            Log::error(sprintf('Error on Guzzle getRequest. Exception thrown: %s', $e->getMessage()));
+            return null;
+        }
+
+        $endTime = round(microtime(true) - $startTime, 6);
+        Log::info(sprintf('Response received back in %s second(s).', $endTime));
+
+        // A different status code, other than hTTP 200 was returned
+        if (200 !== (int)$httpClient->status()) {
+            Log::error(sprintf('Invalid response returned. Status code: %s, with message: %s', $httpClient->status(), $httpClient->body()));
+            return null;
+        }
+
+        $response['body'] = json_decode($httpClient->body(), true);
+        $response['headers'] = $httpClient->headers();
+        $response['statusCode'] = $httpClient->status();
+        Log::info(sprintf('Proper HTTP status %s returned. Returning array response.', $httpClient->status()));
+
+        return $response;
+    }
+
+    /**
      * @return array
      */
     private function generateHeaders(): array

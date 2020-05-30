@@ -13,4 +13,22 @@ abstract class SyncHandler
 
     abstract public function call(): void;
 
+    public function determineFFAccountType($saAccountType): ?string
+    {
+        /**
+         * SA logic: nature = account, savings, mortgage (supported thus far)
+         */
+        switch ($saAccountType) {
+            case ($saAccountType == 'account' || $saAccountType == 'savings'):
+                return 'asset';
+                break;
+            case 'mortgage':
+                return 'liability';
+                break;
+            default:
+                Log::error(sprintf('Could not handle the current SA account type %s.', $saAccountType));
+                return null;
+                break;
+        }
+    }
 }
