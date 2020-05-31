@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateFireflyAccountsTable extends Migration
+class CreateFireflyTransactionsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,13 @@ class CreateFireflyAccountsTable extends Migration
      */
     public function up()
     {
-        Schema::create('firefly_accounts', function (Blueprint $table) {
+        Schema::create('firefly_transactions', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
             $table->softDeletes();
-            $table->bigInteger('account_id');
-            $table->string('account_name');
-            $table->string('account_iban')->nullable();
-            $table->string('account_number')->nullable();
+            $table->bigInteger('account_name')->nullable();
+            $table->string('source_name')->nullable();
+            $table->string('source_iban')->nullable();
             $table->binary('object');
             $table->string('hash');
         });
@@ -33,6 +32,6 @@ class CreateFireflyAccountsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('firefly_accounts');
+        Schema::dropIfExists('firefly_transactions');
     }
 }

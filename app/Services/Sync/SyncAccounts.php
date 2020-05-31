@@ -29,9 +29,6 @@ class SyncAccounts extends SyncHandler
         $saltEdgeAccounts = new SARepo;
         $saltEdgeAccounts = $saltEdgeAccounts->findAllAccounts();
 
-        $fireflyAccounts = new FFRepo;
-        $fireflyAccounts = $fireflyAccounts->findAllAccounts();
-
         // Alright, now the mappings needs to happen
         // The basic idea is that the IBAN is unique and should be searched for
         foreach ($saltEdgeAccounts as $s) {
@@ -41,16 +38,20 @@ class SyncAccounts extends SyncHandler
 
             // @TODO: should also be able to store the account_id in Firefly's meta table for future reference
             // Downside would be that the connection ID's change, the meta data would also render uselsess. The iban seems to be the safest solution as far as I see now.
-            $fireflyAccount = $fireflyAccount->findByIban($s->account_name);
+            $fireflyAccountByIban = $fireflyAccount->findByIban($s->account_name);
 
-            if (null === $fireflyAccount) {
-                Log::info(sprintf('Firefly account with details %s was not found yet. Trying to create...', $s->account_name));
-
-                $newAccount = $this->createAccount($object);
-                if (null === $newAccount) {
-                    Log::error(sprintf('Unable to create account for %s. Skipping record and continuing...', $s->account_name));
+            if (null === $fireflyAccountByIban) {
+                Log::info(sprintf('Firefly account with details %s was not found by Iban. Continue search on account number.', $s->account_name));
+                $fireflyAccountByAccountNumber = $fireflyAccount->findByAccountNumber($s->account_name);
+                if (null === $fireflyAccountByAccountNumber) {
+                    Log::info(sprintf('Firefly account with details %s was not found by AccountNumber. Perhaps it is time to create one.', $s->account_name));
+                    $newAccount = $this->createAccount($object);
+                    if (null === $newAccount) {
+                        Log::error(sprintf('Unable to create account for %s. Skipping record and continuing...', $s->account_name));
+                    }
                 }
             }
+            Log::info(sprintf('Account with details %s already exists. Skipping...', $s->account_name));
         }
     }
 
@@ -87,8 +88,9 @@ class SyncAccounts extends SyncHandler
 
         $accountType = $this->determineFFAccountType($saltEdgeAccount->getNature());
 
+        // @TODO: nasty, make objects later on
         $data = [];
-        $data['name'] = $saltEdgeAccount->getName();
+        $data['name'] = $saltEdgeAccount->getExtra()['account_name'];
         $data['type'] = $accountType;
 
         if ($accountType === 'liability') {
@@ -101,6 +103,7 @@ class SyncAccounts extends SyncHandler
             // Quickly and dirty for now: take the highest: it might feel beneficial if you 'save' some money if you pay less mortgage? ;)
             $data['interest'] = $saltEdgeAccount->getExtra()['floating_interest_rate']['max_value'];
             $data['interest_period'] = 'monthly'; // Fixed value
+            $data['account_number'] = $saltEdgeAccount->getName();
         } else {
             $data['iban'] = $saltEdgeAccount->getName();
             // @TODO: Default for now, make proper code later on

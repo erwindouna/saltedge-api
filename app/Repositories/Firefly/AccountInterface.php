@@ -26,6 +26,12 @@ interface AccountInterface
     public function findByIban(string $iban): ?Account;
 
     /**
+     * @param string $accountNumber
+     * @return Account|null
+     */
+    public function findByAccountNumber(string $accountNumber): ?Account;
+
+    /**
      * @return Collection|null
      */
     public function findAllAccounts(): ?Collection;

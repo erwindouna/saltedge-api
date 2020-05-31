@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\Fireflly\Requests\Transactions;
 use App\Services\Firefly\Requests\Accounts;
 use App\Services\SaltEdge\Requests\ListAccountsRequest;
 use App\Services\SaltEdge\Requests\ListLoginsRequest;
@@ -54,8 +55,9 @@ class Import extends Command
         $startTime = microtime(true);
         $this->line('Starting import run');
 
-        // Yes, but so easy for development
-        goto Sync;
+        // Yes, not good, but so easy for development
+        //goto Sync;
+        goto Transactions;
         Log::info('Starting SaltEdge ListLoginsRequest');
         $saltEdgeLogins = app(ListLoginsRequest::class);
         $saltEdgeLogins->call();
@@ -66,21 +68,27 @@ class Import extends Command
         $saltEdgeAccounts->call();
         Log::info('Finished SaltEdge ListAccountsRequest');
 
+        Sync:
         Log::info('Starting FireFly AccountsRequest');
         $fireflyAccounts = app(Accounts::class);
         $fireflyAccounts->call();
         Log::info('Starting FireFly AccountsRequest');
 
+        Log::info("Starting to synchronize accounts.");
+        $syncAccounts = app(SyncAccounts::class);
+        $syncAccounts->call();
+        Log::info("Finished synchronize accounts.");
+
+        Transactions:
         Log::info('Starting SaltEdge ListTransactionsRequest');
         $saltEdgeTransactions = app(ListTransactions::class);
         $saltEdgeTransactions->call();
         Log::info('Finished SaltEdge ListTransactionsRequest');
 
-        Sync:
-        Log::info("Starting to synchronize accounts.");
-        $syncAccounts = app(SyncAccounts::class);
-        $syncAccounts->call();
-        Log::info("Finished synchronize accounts.");
+        Log::info('Starting Firefly TransactionsRequest');
+        $fireflyTransactions = app(Transactions::class);
+        $fireflyTransactions->cal();
+        Log::info('Finished Firefly TransactionsRequest');
 
         $endTime = round(microtime(true) - $startTime, 4);
         $this->comment(sprintf('Finished the test in %s second(s).', $endTime));

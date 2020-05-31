@@ -19,6 +19,7 @@ class AccountRepository implements AccountInterface
             'account_id' => $data->getId(),
             'account_name' => $data->getAttributes()->getName(),
             'account_iban' => $data->getAttributes()->getIban(),
+            'account_number' => $data->getAttributes()->getAccountNumber(),
             'object' => $object,
             'hash' => hash('sha256', $object)
         ]);
@@ -42,6 +43,15 @@ class AccountRepository implements AccountInterface
     public function findByIban(string $iban): ?Account
     {
         return Account::where('account_iban', $iban)->first();
+    }
+
+    /**
+     * @param string $accountNumber
+     * @return Account|null
+     */
+    public function findByAccountNumber(string $accountNumber): ?Account
+    {
+        return Account::where('account_number', $accountNumber)->first();
     }
 
     /**
