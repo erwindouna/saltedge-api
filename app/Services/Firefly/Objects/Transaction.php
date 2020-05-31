@@ -6,13 +6,13 @@ use App\Services\Firefly\Objects\Transaction\Attributes;
 
 class Transaction
 {
-    private $transactions;
+    private $type;
     private $id;
-    private Attributes $attributes;
+    private $attributes;
 
     public function __construct(array $array)
     {
-        $this->transactions = $array['transactions'];
+        $this->type = $array['type'];
         $this->id = $array['id'];
         $this->attributes = new Attributes($array['attributes']);
     }
@@ -20,17 +20,17 @@ class Transaction
     /**
      * @return mixed
      */
-    public function getTransactions()
+    public function getType()
     {
-        return $this->transactions;
+        return $this->type;
     }
 
     /**
-     * @param mixed $transactions
+     * @param mixed $type
      */
-    public function setTransactions($transactions): void
+    public function setType($type): void
     {
-        $this->transactions = $transactions;
+        $this->type = $type;
     }
 
     /**

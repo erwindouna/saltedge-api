@@ -6,10 +6,11 @@ use Illuminate\Support\Carbon;
 
 class Attributes
 {
-    private Carbon $createdAt;
-    private Carbon $updatedAt;
+    private $createdAt;
+    private $updatedAt;
     private $user;
     private $group_title;
+    private $transactions;
 
     public function __construct(array $array)
     {
@@ -17,6 +18,7 @@ class Attributes
         $this->updatedAt = new Carbon($array['updated_at']);
         $this->user = $array['user'];
         $this->group_title = $array['group_title'];
+        $this->transactions = new Transactions($array['transactions']);
     }
 
     /**
@@ -81,5 +83,21 @@ class Attributes
     public function setGroupTitle($group_title): void
     {
         $this->group_title = $group_title;
+    }
+
+    /**
+     * @return Transactions
+     */
+    public function getTransactions(): Transactions
+    {
+        return $this->transactions;
+    }
+
+    /**
+     * @param Transactions $transactions
+     */
+    public function setTransactions(Transactions $transactions): void
+    {
+        $this->transactions = $transactions;
     }
 }

@@ -17,9 +17,11 @@ class CreateFireflyTransactionsTable extends Migration
             $table->id();
             $table->timestamps();
             $table->softDeletes();
-            $table->bigInteger('account_name')->nullable();
+            $table->bigInteger('transaction_id');
+            $table->string('description')->nullable();
             $table->string('source_name')->nullable();
             $table->string('source_iban')->nullable();
+            $table->bigInteger('external_id')->nullable();
             $table->binary('object');
             $table->string('hash');
         });

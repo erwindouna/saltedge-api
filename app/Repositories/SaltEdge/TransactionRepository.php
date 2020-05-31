@@ -3,7 +3,7 @@
 namespace App\Repositories\SaltEdge;
 
 use App\Models\SaltEdge\Transaction;
-use Ramsey\Collection\Collection;
+use Illuminate\Support\Collection;
 
 class TransactionRepository implements TransactionInterface
 {
@@ -41,5 +41,13 @@ class TransactionRepository implements TransactionInterface
     public function findByTransactionId(int $transactionId): ?Transaction
     {
         return Transaction::where('salt_edge_transaction_id', $transactionId)->first();
+    }
+
+    /**
+     * @return Transaction|null
+     */
+    public function findAllTransactions(): ?Collection
+    {
+        return Transaction::whereNull('deleted_at')->get();
     }
 }

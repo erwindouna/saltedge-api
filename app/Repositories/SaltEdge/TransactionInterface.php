@@ -3,7 +3,7 @@
 namespace App\Repositories\SaltEdge;
 
 use App\Models\SaltEdge\Transaction;
-use Ramsey\Collection\Collection;
+use Illuminate\Support\Collection;
 
 interface TransactionInterface
 {
@@ -25,4 +25,9 @@ interface TransactionInterface
      * @return Transaction|null
      */
     public function findByTransactionId(int $id): ?Transaction;
+
+    /**
+     * @return Transaction|null
+     */
+    public function findAllTransactions(): ?Collection;
 }

@@ -8,6 +8,7 @@ use App\Services\SaltEdge\Requests\ListAccountsRequest;
 use App\Services\SaltEdge\Requests\ListLoginsRequest;
 use App\Services\SaltEdge\Requests\ListTransactions;
 use App\Services\Sync\SyncAccounts;
+use App\Services\Sync\SyncTransactions;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -63,12 +64,12 @@ class Import extends Command
         $saltEdgeLogins->call();
         Log::info('Finished SaltEdge ListLoginsRequest');
 
+        Sync:
         Log::info('Starting SaltEdge ListAccountsRequest');
         $saltEdgeAccounts = app(ListAccountsRequest::class);
         $saltEdgeAccounts->call();
         Log::info('Finished SaltEdge ListAccountsRequest');
 
-        Sync:
         Log::info('Starting FireFly AccountsRequest');
         $fireflyAccounts = app(Accounts::class);
         $fireflyAccounts->call();
@@ -87,8 +88,13 @@ class Import extends Command
 
         Log::info('Starting Firefly TransactionsRequest');
         $fireflyTransactions = app(Transactions::class);
-        $fireflyTransactions->cal();
+        $fireflyTransactions->call();
         Log::info('Finished Firefly TransactionsRequest');
+
+        Log::info("Starting to synchronize transactions.");
+        $syncTransactions = app(SyncTransactions::class);
+        $syncTransactions->call();
+        Log::info("Finished synchronize accounts.");
 
         $endTime = round(microtime(true) - $startTime, 4);
         $this->comment(sprintf('Finished the test in %s second(s).', $endTime));

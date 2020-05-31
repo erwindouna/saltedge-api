@@ -2,13 +2,17 @@
 
 namespace App\Services\Fireflly\Requests;
 
-use App\Repositories\Firefly\AccountRepository;
+use App\Repositories\Firefly\TransactionRepository;
+use App\Services\Firefly\Objects\Transaction;
 use App\Services\Firefly\Requests\FireflyRequest;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
 class Transactions extends FireflyRequest
 {
+    protected $uri;
+    protected $transactios;
+
     public function __construct()
     {
         parent::__construct();
@@ -28,32 +32,40 @@ class Transactions extends FireflyRequest
         }
 
         $collection = new Collection;
-        if (0 <= count($response['body']['data'])) {
+        if (count($response['body']['data']) === 0) {
             Log::error('No transactions were found via the Firefly API');
             return;
         }
 
         foreach ($response['body']['data'] as $accountArray) {
-            $collection->push(new Tran($accountArray));
+            $collection->push(new Transaction($accountArray));
         }
 
-        Log::info(sprintf('A total of %s account record(s) were retrieved. Looping through record(s).', $collection->count()));
+        Log::info(sprintf('A total of %s transactions record(s) were retrieved. Looping through record(s).', $collection->count()));
         foreach ($collection as $k => $c) {
-            $account = new AccountRepository;
-            $account = $account->findByAccountId($c->getId());
-            if (null === $account) {
-                Log::info(sprintf('Creating new account record for %s.', $c->getAttributes()->getName()));
-                $account = new AccountRepository;
-                $account->store($c);
+            $transaction = new TransactionRepository;
+            $transaction = $transaction->findByTransActionId($c->getId());
+            if (null === $transaction) {
+                Log::info(sprintf('Creating new transactions record for %s.', $c->getId()));
+                $transaction = new TransactionRepository;
+                $transaction->store($c);
                 continue;
             }
 
-            Log::info(sprintf('Updating account record for %s.', $c->getAttributes()->getName()));
-            $account->object = encrypt(serialize($c));
-            $account->hash = hash('sha256', encrypt(serialize($c)));
-            $account->save();
+            Log::info(sprintf('Updating account record for %s.', $c->getId()));
+            $transaction->object = encrypt(serialize($c));
+            $transaction->hash = hash('sha256', encrypt(serialize($c)));
+            $transaction->save();
         }
 
-        $this->accounts = $collection->toArray();
+        $this->transactios = $collection->toArray();
+    }
+
+    /**
+     * @return Transactions|null
+     */
+    public function getTransactions(): ?Transactions
+    {
+        return $this->transactios;
     }
 }
