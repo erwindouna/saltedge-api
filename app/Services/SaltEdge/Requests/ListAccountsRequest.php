@@ -62,7 +62,7 @@ class ListAccountsRequest extends SaltEdgeRequest
                 }
 
                 Log::info(sprintf('Updating account record for %s.', $col->getName()));
-                $account->object = serialize($col);
+                $account->object = encrypt(serialize($col));
                 $account->hash = hash('sha256', serialize($col));
                 $account->save();
             }
