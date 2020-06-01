@@ -30,4 +30,6 @@ interface TransactionInterface
      * @return Transaction|null
      */
     public function findAllTransactions(): ?Collection;
+
+    public function flush(): void;
 }

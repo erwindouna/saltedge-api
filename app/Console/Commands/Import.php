@@ -58,7 +58,7 @@ class Import extends Command
 
         // Yes, not good, but so easy for development
         //goto Sync;
-        goto Transactions;
+        //goto Transactions;
         Log::info('Starting SaltEdge ListLoginsRequest');
         $saltEdgeLogins = app(ListLoginsRequest::class);
         $saltEdgeLogins->call();

@@ -2,6 +2,7 @@
 
 namespace App\Services\Sync;
 
+use App\Repositories\Firefly\AccountRepository;
 use App\Repositories\Firefly\AccountRepository as ffAccount;
 use App\Repositories\Firefly\TransactionRepository as FFRepo;
 use App\Repositories\SaltEdge\AccountRepository as saAccount;
@@ -67,16 +68,22 @@ class SyncTransactions extends SyncHandler
             $type = 'deposit';
         }
 
-        $transaction['amount'] = abs($saltEdgeTransaction->getAmount());
-        // @TODO: now a big part comes: build the mechanic that searches for the accounts per transaction, else create one via the Firefly API and use that one
-
         // DEVELOP: assume for now the source_id is empty and we need to create an account
-        $newAccount = new SyncAccounts();
-        $newAccount = $newAccount->createAccountTransaction($saltEdgeTransaction);
-        if (null === $newAccount) {
-            Log::error(sprintf('Unable to create account for %s. Stopping creation of transaction.', $saltEdgeTransaction->getDescription()));
-            return false;
+        $ffExistingAccount = new AccountRepository;
+        $ffExistingAccount = $ffExistingAccount->findByAccountName($saltEdgeTransaction->getDescription());
+        if (null === $ffExistingAccount) {
+            $ffExistingAccount = new SyncAccounts();
+            $ffExistingAccount = $ffExistingAccount->createAccountTransaction($saltEdgeTransaction);
+            if (null === $ffExistingAccount) {
+                Log::error(sprintf('Unable to create account for %s. Stopping creation of transaction.', $saltEdgeTransaction->getDescription()));
+                return false;
+            }
         }
+
+        // REDUNDANT< OPTMIZE!!
+        $ffExistingAccount = new AccountRepository;
+        $ffExistingAccount = $ffExistingAccount->findByAccountName($saltEdgeTransaction->getDescription());
+        $ffExistingObject = unserialize(decrypt($ffExistingAccount->object));
 
         $saltEdgeAccount = new saAccount;
         $saltEdgeAccount = $saltEdgeAccount->findByAccountId($saltEdgeTransaction->getAccountId());
@@ -85,13 +92,15 @@ class SyncTransactions extends SyncHandler
         $fireflyAccount = $fireflyAccount->findByIban($saltEdgeAccount->getAttribute('account_name'));
         $ffObject = unserialize(decrypt($fireflyAccount->object));
 
+
         $source = ['id' => $ffObject->getId(), 'name' => $ffObject->getAttributes()->getName()];
-        $destination = ['id' => $newAccount->getId(), 'name' => $newAccount->getAttributes()->getName()];
+        $destination = ['id' => $ffExistingObject->getId(), 'name' => $ffExistingObject->getAttributes()->getName()];
 
         if (true === $swap) {
             [$source, $destination] = [$destination, $source];
         }
 
+        $transaction['amount'] = abs($saltEdgeTransaction->getAmount());
         $transaction['type'] = $type;
         $transaction['destination_id'] = $destination['id'];
         $transaction['destination_name'] = $destination['name'];

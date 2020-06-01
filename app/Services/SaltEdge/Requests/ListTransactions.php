@@ -26,6 +26,8 @@ class ListTransactions extends SaltEdgeRequest
     public function call(): void
     {
         Log::info('Starting to retrieve all transactions, linked by the available accounts. Fetching accounts object(s).');
+        $this->flush();
+
         $accounts = new AccountRepository;
         $accounts = $accounts->findAllAccounts();
 
@@ -38,37 +40,48 @@ class ListTransactions extends SaltEdgeRequest
         foreach ($accounts as $a) {
             $account = unserialize(decrypt($a->object));
 
-            $tmpUri = $this->uri . '?' . http_build_query(['account_id' => $account->getId()]);
-            $response = $this->getRequest($tmpUri);
+            $nextPage = 0;
+            $continueRequest = true;
+            while ($continueRequest) {
+                $tmpUri = $this->uri . '?' . http_build_query(['from_id' => $nextPage, 'account_id' => $account->getId()]);
+                $response = $this->getRequest($tmpUri);
 
-            if (null === $response) {
-                Log::error(sprintf('Could not find transactions for accountId %s.', $account->getId()));
-                continue;
-            }
-
-            $collection = new Collection;
-            foreach ($response['body']['data'] as $transactionArray) {
-                $collection->push(new Transaction($transactionArray));
-            }
-
-            Log::info(sprintf('A total of %s transactions record(s) were retrieved. Looping through record(s).', $collection->count()));
-            foreach ($collection as $k => $c) {
-                $transaction = new TransactionRepository;
-                $transaction = $transaction->findByTransactionId($c->getId());
-                if (null === $transaction) {
-                    Log::info(sprintf('Creating new transaction record for %s.', $c->getId()));
-                    $transaction = new TransactionRepository;
-                    $transaction->store($c, $c->getAccountId());
+                if (null === $response) {
+                    Log::error(sprintf('Could not find transactions for accountId %s.', $account->getId()));
                     continue;
                 }
 
-                Log::info(sprintf('Updating transaction record for %s.', $c->getId()));
-                $transaction->object = encrypt(serialize($c));
-                $transaction->hash = hash('sha256', encrypt(serialize($c)));
-                $transaction->save();
+                $collection = new Collection;
+                foreach ($response['body']['data'] as $transactionArray) {
+                    $collection->push(new Transaction($transactionArray));
+                }
+
+                Log::info(sprintf('A total of %s transactions record(s) were retrieved. Looping through record(s).', $collection->count()));
+                foreach ($collection as $k => $c) {
+                    $transaction = new TransactionRepository;
+                    $transaction = $transaction->findByTransactionId($c->getId());
+                    if (null === $transaction) {
+                        Log::info(sprintf('Creating new transaction record for %s.', $c->getId()));
+                        $transaction = new TransactionRepository;
+                        $transaction->store($c, $c->getAccountId());
+                        continue;
+                    }
+
+                    Log::info(sprintf('Updating transaction record for %s.', $c->getId()));
+                    $transaction->object = encrypt(serialize($c));
+                    $transaction->hash = hash('sha256', encrypt(serialize($c)));
+                    $transaction->save();
+                }
+                $this->transactions[] = $collection->toArray();
+
+                $continueRequest = false;
+                if (isset($response['body']['meta']['next_id']) && (int)$response['body']['meta']['next_id'] > $nextPage) {
+                    $continueRequest = true;
+                    $nextPage = $response['body']['meta']['next_id'];
+                }
             }
 
-            $this->transactions = $collection->toArray();
+
         }
     }
 
@@ -78,5 +91,14 @@ class ListTransactions extends SaltEdgeRequest
     public function getTransactions(): ?Transaction
     {
         return $this->transactions;
+    }
+
+    public function flush(): void
+    {
+        Log::info('Performing SaltEdge transaction(s) flush.');
+        $transactionsFlush = new TransactionRepository;
+        $transactionsFlush->flush();
+        Log::info('Finished SaltEdge transaction(s) flush.');
+
     }
 }

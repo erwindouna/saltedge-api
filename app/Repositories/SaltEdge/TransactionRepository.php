@@ -50,4 +50,12 @@ class TransactionRepository implements TransactionInterface
     {
         return Transaction::whereNull('deleted_at')->get();
     }
+
+    /**
+     * Flush all known instances
+     */
+    public function flush(): void
+    {
+        Transaction::truncate();
+    }
 }

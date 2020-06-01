@@ -26,41 +26,52 @@ class Transactions extends FireflyRequest
         // Flush first
         $this->flush();
 
-        $response = $this->getRequest($this->uri);
+        $nextPage = 1;
+        $continueRequest = true;
+        while ($continueRequest) {
+            $tmpUri = $this->uri . '?' . http_build_query(['page' => $nextPage]);
+            $response = $this->getRequest($tmpUri);
 
-        if (null === $response) {
-            Log::error('Could not find any transactions for Firefly.');
-            return;
-        }
-
-        $collection = new Collection;
-        if (count($response['body']['data']) === 0) {
-            Log::error('No transactions were found via the Firefly API');
-            return;
-        }
-
-        foreach ($response['body']['data'] as $accountArray) {
-            $collection->push(new Transaction($accountArray));
-        }
-
-        Log::info(sprintf('A total of %s transactions record(s) were retrieved. Looping through record(s).', $collection->count()));
-        foreach ($collection as $k => $c) {
-            $transaction = new TransactionRepository;
-            $transaction = $transaction->findByTransActionId($c->getId());
-            if (null === $transaction) {
-                Log::info(sprintf('Creating new transactions record for %s.', $c->getId()));
-                $transaction = new TransactionRepository;
-                $transaction->store($c);
-                continue;
+            if (null === $response) {
+                Log::error('Could not find any transactions for Firefly.');
+                return;
             }
 
-            Log::info(sprintf('Updating account record for %s.', $c->getId()));
-            $transaction->object = encrypt(serialize($c));
-            $transaction->hash = hash('sha256', encrypt(serialize($c)));
-            $transaction->save();
-        }
+            $collection = new Collection;
+            if (count($response['body']['data']) === 0) {
+                Log::error('No transactions were found via the Firefly API');
+                return;
+            }
 
-        $this->transactios = $collection->toArray();
+            foreach ($response['body']['data'] as $accountArray) {
+                $collection->push(new Transaction($accountArray));
+            }
+
+            Log::info(sprintf('A total of %s transactions record(s) were retrieved. Looping through record(s).', $collection->count()));
+            foreach ($collection as $k => $c) {
+                $transaction = new TransactionRepository;
+                $transaction = $transaction->findByTransActionId($c->getId());
+                if (null === $transaction) {
+                    Log::info(sprintf('Creating new transactions record for %s.', $c->getId()));
+                    $transaction = new TransactionRepository;
+                    $transaction->store($c);
+                    continue;
+                }
+
+                Log::info(sprintf('Updating account record for %s.', $c->getId()));
+                $transaction->object = encrypt(serialize($c));
+                $transaction->hash = hash('sha256', encrypt(serialize($c)));
+                $transaction->save();
+            }
+
+            $continueRequest = false;
+            if (isset($response['body']['meta']['pagination']['current_page']) && $response['body']['meta']['pagination']['total_pages'] > $nextPage) {
+                $continueRequest = true;
+                $nextPage = ++$nextPage;
+            }
+
+            $this->transactios = $collection->toArray();
+        }
     }
 
     /**
