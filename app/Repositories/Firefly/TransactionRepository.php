@@ -18,7 +18,7 @@ class TransactionRepository implements TransactionInterface
             'source_iban' => $data->getAttributes()->getTransactions()->getSourceIban(),
             'source_name' => $data->getAttributes()->getTransactions()->getSourceName(),
             'transaction_id' => $data->getId(),
-            'exeternal_id' => $data->getAttributes()->getTransactions()->getExternalId(),
+            'external_id' => $data->getAttributes()->getTransactions()->getExternalId(),
             'object' => $object,
             'hash' => hash('sha256', $object)
         ]);
@@ -42,5 +42,13 @@ class TransactionRepository implements TransactionInterface
     public function findByExternalId(int $externalId): ?Transactions
     {
         return Transactions::where('external_id', $externalId)->first();
+    }
+
+    /**
+     * @return void
+     */
+    public function flush(): void
+    {
+        Transactions::truncate();
     }
 }

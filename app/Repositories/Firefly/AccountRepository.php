@@ -55,10 +55,27 @@ class AccountRepository implements AccountInterface
     }
 
     /**
+     * @param string $accountName
+     * @return Account|null
+     */
+    public function findByAccountName(string $accountName): ?Account
+    {
+        return Account::where('account_name', $accountName)->first();
+    }
+
+    /**
      * @return Collection|null
      */
     public function findAllAccounts(): ?Collection
     {
         return Account::whereNull('deleted_at')->get();
+    }
+
+    /**
+     * Flush all known instances
+     */
+    public function flush(): void
+    {
+        Account::truncate();
     }
 }

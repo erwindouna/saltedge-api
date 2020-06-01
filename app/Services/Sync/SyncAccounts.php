@@ -2,10 +2,13 @@
 
 namespace App\Services\Sync;
 
+use App\Repositories\Firefly\AccountRepository;
 use App\Repositories\Firefly\AccountRepository as FFRepo;
 use App\Repositories\SaltEdge\AccountRepository as SARepo;
+use App\Services\Firefly\Objects\Account as ffAccount;
 use App\Services\Firefly\Requests\Accounts;
-use App\Services\SaltEdge\Objects\Account;
+use App\Services\SaltEdge\Objects\Account as saAccount;
+use App\Services\SaltEdge\Objects\Transaction;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -56,11 +59,11 @@ class SyncAccounts extends SyncHandler
     }
 
     /**
-     * @param Account $saltEdgeAccount
+     * @param saAccount $saltEdgeAccount
      * @return bool|null
      * @throws \Exception
      */
-    public function createAccount(Account $saltEdgeAccount): ?bool
+    public function createAccount(saAccount $saltEdgeAccount): ?bool
     {
         /**
          * "name": "My checking account",
@@ -89,6 +92,7 @@ class SyncAccounts extends SyncHandler
         $accountType = $this->determineFFAccountType($saltEdgeAccount->getNature());
 
         // @TODO: nasty, make objects later on
+        // First want to see how corresponding the objects can be made based on the initial assets, etc. accounts from SaltEdge and the accounts needed for transactions
         $data = [];
         $data['name'] = $saltEdgeAccount->getExtra()['account_name'];
         $data['type'] = $accountType;
@@ -120,5 +124,41 @@ class SyncAccounts extends SyncHandler
         $postRequest->postRequest($this->uri, $data);
 
         return true;
+    }
+
+    /**
+     * @param Transaction $saltEdgeTransaction
+     * @return ffAccount|null
+     * @throws \Exception
+     */
+    public function createAccountTransaction(Transaction $saltEdgeTransaction): ?ffAccount
+    {
+        Log::debug(sprintf('Starting the creation process for account %s.', $saltEdgeTransaction->getDescription()));
+        $data = [];
+        $data['name'] = $saltEdgeTransaction->getDescription();
+
+        // @TODO: make some nice constants or something for this!
+        $data['type'] = 'expense';
+        if (1 === bccomp($saltEdgeTransaction->getAmount(), 0)) {
+            $data['type'] = 'revenue';
+        }
+
+        $postRequest = new Accounts();
+        $postRequest = $postRequest->postRequest($this->uri, $data);
+
+        if (null === $postRequest) {
+            Log::error('Error creating new account for transactions.');
+            return null;
+        }
+
+        $newAccount = new ffAccount($postRequest['body']['data']);
+
+        // Store the newly made account, so it can be used in the next iteration(s)
+        $store = new AccountRepository;
+        $store->store($newAccount);
+
+        Log::debug(sprintf('Finished creating account. New ID returned: %s', $newAccount->getId()));
+
+        return $newAccount;
     }
 }

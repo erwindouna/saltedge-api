@@ -22,7 +22,9 @@ class Transactions extends FireflyRequest
 
     public function call(): void
     {
-        Log::info('Starting to retrieve all tranactions from Firefly.');
+        Log::info('Starting to retrieve all transactions from Firefly.');
+        // Flush first
+        $this->flush();
 
         $response = $this->getRequest($this->uri);
 
@@ -59,6 +61,17 @@ class Transactions extends FireflyRequest
         }
 
         $this->transactios = $collection->toArray();
+    }
+
+    /**
+     * @return void
+     */
+    public function flush(): void
+    {
+        Log::info('Performing Firefly transaction(s) flush.');
+        $transactionsFlush = new TransactionRepository;
+        $transactionsFlush->flush();
+        Log::info('Finished Firefly transaction(s) flush.');
     }
 
     /**

@@ -9,7 +9,7 @@ class Attributes
     private $createdAt;
     private $updatedAt;
     private $user;
-    private $group_title;
+    private $groupTitle;
     private $transactions;
 
     public function __construct(array $array)
@@ -17,7 +17,7 @@ class Attributes
         $this->createdAt = new Carbon($array['created_at']);
         $this->updatedAt = new Carbon($array['updated_at']);
         $this->user = $array['user'];
-        $this->group_title = $array['group_title'];
+        $this->groupTitle = $array['group_title'];
         $this->transactions = new Transactions($array['transactions']);
     }
 
@@ -74,15 +74,15 @@ class Attributes
      */
     public function getGroupTitle()
     {
-        return $this->group_title;
+        return $this->groupTitle;
     }
 
     /**
-     * @param mixed $group_title
+     * @param mixed $groupTitle
      */
-    public function setGroupTitle($group_title): void
+    public function setGroupTitle($groupTitle): void
     {
-        $this->group_title = $group_title;
+        $this->groupTitle = $groupTitle;
     }
 
     /**

@@ -23,4 +23,9 @@ interface TransactionInterface
      * @return Transactions|null
      */
     public function findByExternalId(int $externalId): ?Transactions;
+
+    /**
+     * @return void
+     */
+    public function flush(): void;
 }

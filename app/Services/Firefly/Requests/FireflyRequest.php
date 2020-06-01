@@ -10,6 +10,7 @@ abstract class FireflyRequest
 {
     private $accesToken;
     private $refreshToken;
+    private $response;
 
     public function __construct()
     {
@@ -84,12 +85,12 @@ abstract class FireflyRequest
             return null;
         }
 
-        $response['body'] = json_decode($httpClient->body(), true);
-        $response['headers'] = $httpClient->headers();
-        $response['statusCode'] = $httpClient->status();
+        $this->response['body'] = json_decode($httpClient->body(), true);
+        $this->response['headers'] = $httpClient->headers();
+        $this->response['statusCode'] = $httpClient->status();
         Log::info(sprintf('Proper HTTP status %s returned. Returning array response.', $httpClient->status()));
 
-        return $response;
+        return $this->response;
     }
 
     /**

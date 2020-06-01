@@ -22,6 +22,8 @@ class Accounts extends FireflyRequest
     public function call(): void
     {
         Log::info('Starting to retrieve all accounts from Firefly.');
+        // Perform a flush first
+        $this->flush();
 
         $response = $this->getRequest($this->uri);
 
@@ -61,5 +63,16 @@ class Accounts extends FireflyRequest
     public function getAccounts(): ?Account
     {
         return $this->accounts;
+    }
+
+    /**
+     * @return void
+     */
+    public function flush(): void
+    {
+        Log::info('Performing Firefly transaction(s) flush.');
+        $accountsFlush = new AccountRepository;
+        $accountsFlush->flush();
+        Log::info('Finished Firefly transaction(s) flush.');
     }
 }

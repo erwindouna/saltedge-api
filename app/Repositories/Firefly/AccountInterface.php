@@ -35,4 +35,12 @@ interface AccountInterface
      * @return Collection|null
      */
     public function findAllAccounts(): ?Collection;
+
+    /**
+     * @param string $accountName
+     * @return Account|null
+     */
+    public function findByAccountName(string $accountName): ?Account;
+
+    public function flush(): void;
 }
