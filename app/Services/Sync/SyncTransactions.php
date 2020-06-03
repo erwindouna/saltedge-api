@@ -100,15 +100,16 @@ class SyncTransactions extends SyncHandler
             [$source, $destination] = [$destination, $source];
         }
 
-        $transaction['amount'] = abs($saltEdgeTransaction->getAmount());
-        $transaction['type'] = $type;
-        $transaction['destination_id'] = $destination['id'];
-        $transaction['destination_name'] = $destination['name'];
-        $transaction['source_id'] = $source['id'];
-        $transaction['source_name'] = $source['name'];
-
-        $transaction['external_id'] = $saltEdgeTransaction->getId();
-
+        $transaction = [
+            'amount' => abs($saltEdgeTransaction->getAmount()),
+            'type' => $type,
+            'destination_id' => $destination['id'],
+            'destination_name' => $destination['name'],
+            'source_id' => $source['id'],
+            'source_name' => $source['name'],
+            'external_id' => $saltEdgeTransaction->getId(),
+        ];
+        
         $data['transactions'][] = $transaction;
 
         $postRequest = new Transactions();
