@@ -2,15 +2,14 @@
 
 namespace App\Console\Commands;
 
-use App\Services\Fireflly\Requests\Transactions;
-use App\Services\Firefly\Requests\Accounts;
-use App\Services\SaltEdge\Requests\ListAccountsRequest;
-use App\Services\SaltEdge\Requests\ListLoginsRequest;
-use App\Services\SaltEdge\Requests\ListTransactions;
-use App\Services\Sync\SyncAccounts;
-use App\Services\Sync\SyncTransactions;
+use App\Jobs\FireflyAccountsJob;
+use App\Jobs\FireflyTransactionsJob;
+use App\Jobs\SaltEdgeListAccountsJob;
+use App\Jobs\SaltEdgeListLoginsJob;
+use App\Jobs\SaltEdgeListTransactionsJob;
+use App\Jobs\SyncAccountsJob;
+use App\Jobs\SyncTransactionsJob;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 
 class Import extends Command
 {
@@ -56,45 +55,23 @@ class Import extends Command
         $startTime = microtime(true);
         $this->line('Starting import run');
 
-        // Yes, not good, but so easy for development
-        //goto Sync;
-        //goto Transactions;
-        Log::info('Starting SaltEdge ListLoginsRequest');
-        $saltEdgeLogins = app(ListLoginsRequest::class);
-        $saltEdgeLogins->call();
-        Log::info('Finished SaltEdge ListLoginsRequest');
+        // SA Login
+        // SA Accounts
+        // FF Accounts
+        // SyncAccounts
+        // SA Transactions
+        // FF Transactions
+        // SyncTransactions
 
-        Sync:
-        Log::info('Starting SaltEdge ListAccountsRequest');
-        $saltEdgeAccounts = app(ListAccountsRequest::class);
-        $saltEdgeAccounts->call();
-        Log::info('Finished SaltEdge ListAccountsRequest');
+        SaltEdgeListLoginsJob::withChain([
+            new SaltEdgeListAccountsJob,
+            new FireflyAccountsJob,
+            new SyncAccountsJob,
+            new SaltEdgeListTransactionsJob,
+            new FireflyTransactionsJob,
+            new SyncTransactionsJob
+        ])->dispatch();
 
-        Log::info('Starting FireFly AccountsRequest');
-        $fireflyAccounts = app(Accounts::class);
-        $fireflyAccounts->call();
-        Log::info('Starting FireFly AccountsRequest');
-
-        Log::info("Starting to synchronize accounts.");
-        $syncAccounts = app(SyncAccounts::class);
-        $syncAccounts->call();
-        Log::info("Finished synchronize accounts.");
-
-        Transactions:
-        Log::info('Starting SaltEdge ListTransactionsRequest');
-        $saltEdgeTransactions = app(ListTransactions::class);
-        $saltEdgeTransactions->call();
-        Log::info('Finished SaltEdge ListTransactionsRequest');
-
-        Log::info('Starting Firefly TransactionsRequest');
-        $fireflyTransactions = app(Transactions::class);
-        $fireflyTransactions->call();
-        Log::info('Finished Firefly TransactionsRequest');
-
-        Log::info("Starting to synchronize transactions.");
-        $syncTransactions = app(SyncTransactions::class);
-        $syncTransactions->call();
-        Log::info("Finished synchronize transactions.");
 
         $endTime = round(microtime(true) - $startTime, 4);
         $this->comment(sprintf('Finished the test in %s second(s).', $endTime));

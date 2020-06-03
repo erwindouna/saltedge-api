@@ -55,9 +55,6 @@ class SyncTransactions extends SyncHandler
      */
     private function createTransaction(Transaction $saltEdgeTransaction): bool
     {
-        // @TODO: nasty, make objects later on
-        $data = [];
-
         $type = 'withdrawal';
         $accountType = 'expense';
         $swap = false;
@@ -109,6 +106,8 @@ class SyncTransactions extends SyncHandler
             'external_id' => $saltEdgeTransaction->getId(),
         ];
 
+        // @TODO: nasty, make objects later on
+        $data = [];
         $data['transactions'][] = $transaction;
 
         $postRequest = new Transactions();
