@@ -55,6 +55,7 @@ class Import extends Command
         $startTime = microtime(true);
         $this->line('Starting import run');
 
+        // CURRENT WORKFLOW
         // SA Login
         // SA Accounts
         // FF Accounts
@@ -62,7 +63,6 @@ class Import extends Command
         // SA Transactions
         // FF Transactions
         // SyncTransactions
-
         SaltEdgeListLoginsJob::withChain([
             new SaltEdgeListAccountsJob,
             new FireflyAccountsJob,
@@ -72,8 +72,7 @@ class Import extends Command
             new SyncTransactionsJob
         ])->dispatch();
 
-
         $endTime = round(microtime(true) - $startTime, 4);
-        $this->comment(sprintf('Finished the test in %s second(s).', $endTime));
+        $this->comment(sprintf('Queued the workflow in %s second(s).', $endTime));
     }
 }
