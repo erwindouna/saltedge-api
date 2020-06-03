@@ -19,7 +19,7 @@ class CreateSaltEdgeCustomersTable extends Migration
             $table->softDeletes();
             $table->bigInteger('customer_id', false, true);
             $table->string('provider');
-            $table->binary('object');
+            $table->longText('object');
             $table->string('hash');
         });
     }

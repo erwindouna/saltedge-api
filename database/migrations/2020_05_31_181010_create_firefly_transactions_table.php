@@ -22,7 +22,7 @@ class CreateFireflyTransactionsTable extends Migration
             $table->string('source_name')->nullable();
             $table->string('source_iban')->nullable();
             $table->bigInteger('external_id')->nullable();
-            $table->binary('object');
+            $table->longText('object');
             $table->string('hash');
         });
     }

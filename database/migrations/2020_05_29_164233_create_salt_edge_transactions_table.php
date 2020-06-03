@@ -20,7 +20,7 @@ class CreateSaltEdgeTransactionsTable extends Migration
             $table->bigInteger('salt_edge_transaction_id', false, true);
             $table->bigInteger('salt_edge_account_id', false, true);
             $table->foreign('salt_edge_account_id')->references('id')->on('salt_edge_accounts')->onDelete('set null');
-            $table->binary('object');
+            $table->longText('object');
             $table->string('hash');
         });
     }
