@@ -58,19 +58,18 @@ class SyncTransactions extends SyncHandler
         // @TODO: nasty, make objects later on
         $data = [];
 
-        $transaction['description'] = $saltEdgeTransaction->getDescription();
-        $transaction['date'] = $saltEdgeTransaction->getMadeOn()->format('Y-m-d');
-
         $type = 'withdrawal';
+        $accountType = 'expense';
         $swap = false;
         if (1 === bccomp($saltEdgeTransaction->getAmount(), '0')) {
             $swap = true;
             $type = 'deposit';
+            $accountType = 'revenue';
         }
 
-        // DEVELOP: assume for now the source_id is empty and we need to create an account
         $ffExistingAccount = new AccountRepository;
-        $ffExistingAccount = $ffExistingAccount->findByAccountName($saltEdgeTransaction->getDescription());
+        $ffExistingAccount = $ffExistingAccount->findbyAccountNameAndAccountType($saltEdgeTransaction->getDescription(), $accountType);
+        // Either the account does not exists, or the account type is not matching. If so, then create a new account
         if (null === $ffExistingAccount) {
             $ffExistingAccount = new SyncAccounts();
             $ffExistingAccount = $ffExistingAccount->createAccountTransaction($saltEdgeTransaction);
@@ -78,11 +77,10 @@ class SyncTransactions extends SyncHandler
                 Log::error(sprintf('Unable to create account for %s. Stopping creation of transaction.', $saltEdgeTransaction->getDescription()));
                 return false;
             }
+            $ffExistingAccount = new AccountRepository;
+            $ffExistingAccount = $ffExistingAccount->findbyAccountNameAndAccountType($saltEdgeTransaction->getDescription(), $accountType);
         }
 
-        // REDUNDANT< OPTMIZE!!
-        $ffExistingAccount = new AccountRepository;
-        $ffExistingAccount = $ffExistingAccount->findByAccountName($saltEdgeTransaction->getDescription());
         $ffExistingObject = unserialize(decrypt($ffExistingAccount->object));
 
         $saltEdgeAccount = new saAccount;
@@ -92,7 +90,6 @@ class SyncTransactions extends SyncHandler
         $fireflyAccount = $fireflyAccount->findByIban($saltEdgeAccount->getAttribute('account_name'));
         $ffObject = unserialize(decrypt($fireflyAccount->object));
 
-
         $source = ['id' => $ffObject->getId(), 'name' => $ffObject->getAttributes()->getName()];
         $destination = ['id' => $ffExistingObject->getId(), 'name' => $ffExistingObject->getAttributes()->getName()];
 
@@ -101,6 +98,8 @@ class SyncTransactions extends SyncHandler
         }
 
         $transaction = [
+            'description' => $saltEdgeTransaction->getDescription(),
+            'date' => $saltEdgeTransaction->getMadeOn()->format('Y-m-d'),
             'amount' => abs($saltEdgeTransaction->getAmount()),
             'type' => $type,
             'destination_id' => $destination['id'],
@@ -109,7 +108,7 @@ class SyncTransactions extends SyncHandler
             'source_name' => $source['name'],
             'external_id' => $saltEdgeTransaction->getId(),
         ];
-        
+
         $data['transactions'][] = $transaction;
 
         $postRequest = new Transactions();

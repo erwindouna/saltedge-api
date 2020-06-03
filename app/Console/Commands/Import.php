@@ -94,7 +94,7 @@ class Import extends Command
         Log::info("Starting to synchronize transactions.");
         $syncTransactions = app(SyncTransactions::class);
         $syncTransactions->call();
-        Log::info("Finished synchronize accounts.");
+        Log::info("Finished synchronize transactions.");
 
         $endTime = round(microtime(true) - $startTime, 4);
         $this->comment(sprintf('Finished the test in %s second(s).', $endTime));

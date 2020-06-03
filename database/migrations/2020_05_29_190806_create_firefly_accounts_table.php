@@ -21,6 +21,7 @@ class CreateFireflyAccountsTable extends Migration
             $table->string('account_name');
             $table->string('account_iban')->nullable();
             $table->string('account_number')->nullable();
+            $table->string('account_type')->nullable();
             $table->binary('object');
             $table->string('hash');
         });

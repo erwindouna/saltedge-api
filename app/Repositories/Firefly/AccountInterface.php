@@ -42,5 +42,12 @@ interface AccountInterface
      */
     public function findByAccountName(string $accountName): ?Account;
 
+    /**
+     * @param string $accountName
+     * @param string $accountType
+     * @return Account|null
+     */
+    public function findByAccountNameAndAccountType(string $accountName, string $accountType): ?Account;
+
     public function flush(): void;
 }
