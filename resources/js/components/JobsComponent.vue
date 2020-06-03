@@ -2,8 +2,7 @@
     <table class="table">
         <tbody>
         <tr :key="index" v-bind:class="{success: job.run, danger: !job.run}" v-for="(job, index) in allJobs">
-            <td width="80%">{{ job.description }}</td>
-            <td>{{ job.created_at }}</td>
+
         </tr>
         </tbody>
     </table>
@@ -15,12 +14,30 @@
         data() {
             return {allJobs: this.jobs}
         },
-        created() {
-            let vm = this
-            vm.refreshAllJobs = (e) => axios.get('/jobs').then((e) => (vm.allJobs = e.data))
-            Echo.channel('email-queue')
-                .listen('.add', (e) => vm.refreshAllJobs(e))
-                .listen('.sent', (e) => vm.refreshAllJobs(e))
+        mounted() {
+
+        },
+        methods: {
+            getJobs: function () {
+                var self = this
+                const url = 'api/jobs'
+                axios.get(url, {
+                    dataType: 'json',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    mode: 'no-cors',
+                    credentials: 'include'
+                })
+                    .then(function (response) {
+                        console.log(JSON.stringify(response.data))
+                        //self.courses = response.data
+                    })
+                    .catch(function (error) {
+                        console.log(error)
+                    })
+            }
         }
     }
 </script>

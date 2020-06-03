@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('app')
 
 @section('content')
     <div class="container">
@@ -7,14 +7,12 @@
                 <div class="panel panel-default">
                     <div class="panel-heading clearfix">
                         <span class="pull-left">Queue Reports</span>
-                        <a href="{{ route('simulate') }}" class="btn btn-sm btn-primary pull-right">Simulate</a>
+                        <a href="#" class="btn btn-sm btn-primary pull-right">New import</a>
                     </div>
                     <div class="panel-body">
-                        <jobs :jobs='@json($jobs)'></jobs>
-                        </jobs>
+                        <jobs :jobs=''></jobs>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 @endsection
