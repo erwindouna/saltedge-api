@@ -6,6 +6,7 @@
 .env
 .idea
 composer.lock
+package-lock.json
 .env.backup
 .phpunit.result.cache
 Homestead.json
