@@ -10,7 +10,7 @@
                         <a href="#" class="btn btn-sm btn-primary pull-right">New import</a>
                     </div>
                     <div class="panel-body">
-                        <jobs :jobs=''></jobs>
+                        <div id="jobs"></div>
                     </div>
                 </div>
             </div>
