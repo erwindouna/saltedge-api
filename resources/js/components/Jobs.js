@@ -14,10 +14,11 @@ class Jobs extends Component {
 
     render() {
         console.log('Rendering layout...');
-
-        if (null == this.state.jobs) {
-            console.log('Nothing to show');
-            return (<div>Nothing to show</div>)
+        if (null === this.state.jobs || 0 === this.state.jobs.length) {
+            return (
+                <div className="container-fluid">
+                    <div className="alert alert-info">No active jobs at the moment.</div>
+                </div>);
         }
 
         console.log('Mapping JSON');
@@ -27,7 +28,7 @@ class Jobs extends Component {
                     <h5 className="card-title">
                         {job.id}
                         <div className="float-right">
-                            Float right on all viewport sizes
+                            Status:
                         </div>
                     </h5>
                     <h6 className="card-subtitle mb-3 text-muted">{job.created_at}</h6>
@@ -40,17 +41,31 @@ class Jobs extends Component {
         return (<div>{jobsMap}</div>);
     }
 
+    loadingDisplay() {
+        if (true === this.state.isFetching) {
+            return (
+                <div className="spinner-border" role="status">
+                    <span className="sr-only">Loading...</span>
+                </div>);
+        }
+    }
+
     fetchJobs() {
-        console.log('Calling API');
+        this.setState({isFetching: true});
         axios.get('api/jobs')
             .then(response => {
-                this.setState({jobs: response.data, isFetching: false})
+                if (response.status === 200) {
+                    console.log('Found an active job');
+                    this.setState({jobs: response.data, isFetching: false})
+                } else {
+                    this.setState({jobs: null});
+                    console.log('No active jobs returned');
+                }
             })
             .catch(e => {
                 console.error(e);
                 this.setState({...this.state, isFetching: false});
             });
-        console.log('Finished calling the API');
     }
 
     componentWillUnmount() {

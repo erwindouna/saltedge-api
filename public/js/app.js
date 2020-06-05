@@ -66555,9 +66555,12 @@ object-assign
                 value: function render() {
                     console.log('Rendering layout...');
 
-                    if (null == this.state.jobs) {
-                        console.log('Nothing to show');
-                        return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, "Nothing to show");
+                    if (null === this.state.jobs || 0 === this.state.jobs.length) {
+                        return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+                            className: "container-fluid"
+                        }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+                            className: "alert alert-info"
+                        }, "No active jobs at the moment."));
                     }
 
                     console.log('Mapping JSON');
@@ -66570,7 +66573,7 @@ object-assign
                             className: "card-title"
                         }, job.id, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
                             className: "float-right"
-                        }, "Float right on all viewport sizes")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h6", {
+                        }, "Status:")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h6", {
                             className: "card-subtitle mb-3 text-muted"
                         }, job.created_at), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h6", {
                             className: "card-subtitle mb-3 text-muted"
@@ -66581,16 +66584,40 @@ object-assign
                     return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, jobsMap);
                 }
             }, {
+                key: "loadingDisplay",
+                value: function loadingDisplay() {
+                    if (true === this.state.isFetching) {
+                        return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+                            className: "spinner-border",
+                            role: "status"
+                        }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("span", {
+                            className: "sr-only"
+                        }, "Loading..."));
+                    }
+                }
+            }, {
                 key: "fetchJobs",
                 value: function fetchJobs() {
                     var _this2 = this;
 
-                    console.log('Calling API');
+                    this.setState({
+                        isFetching: true
+                    });
                     axios__WEBPACK_IMPORTED_MODULE_2___default.a.get('api/jobs').then(function (response) {
-                        _this2.setState({
-                            jobs: response.data,
-                            isFetching: false
-                        });
+                        if (response.status === 200) {
+                            console.log('Found an active job');
+
+                            _this2.setState({
+                                jobs: response.data,
+                                isFetching: false
+                            });
+                        } else {
+                            _this2.setState({
+                                jobs: null
+                            });
+
+                            console.log('No active jobs returned');
+                        }
                     })["catch"](function (e) {
                         console.error(e);
 
@@ -66598,7 +66625,6 @@ object-assign
                             isFetching: false
                         }));
                     });
-                    console.log('Finished calling the API');
                 }
             }, {
                 key: "componentWillUnmount",
