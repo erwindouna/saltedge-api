@@ -14,3 +14,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('', 'HomeController@index');
+Route::get('/install', 'InstallController@index');
+Route::post('/install/firefly/oauth/request', 'InstallController@fireflyOauthRequest')->name('fireflyOauthRequest');
+Route::get('/install/firefly/oauth/response', 'InstallController@fireflyOauthResponse')->name('fireflyOauthResponse');
+Route::get('/install/firefly/oauth/accesscode', 'InstallController@fireflyOauthResponse')->name('fireflyOauthAccessCodeResponse');

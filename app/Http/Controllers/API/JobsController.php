@@ -17,7 +17,7 @@ class JobsController extends Controller
         $jobs = JobsModel::where('attempts', '>=', 0)->get();
 
         if (0 === $jobs->count()) {
-            return response()->json(['message' => 'No active queued jobs at the moment.'], 204)->header('Content-Type', 'application/json');
+            return response()->json(['message' => 'No active queued jobs at the moment.'], 200)->header('Content-Type', 'application/json');
         }
 
         return response()->json($jobs->toArray(), 200)->header('Content-Type', 'application/json');
